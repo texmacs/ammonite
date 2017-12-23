@@ -24,22 +24,17 @@
 ;;An alternative approach is to use the input-done? command
 ;;from TeXmacs, but, at the time of this writing, it did not work.--A
 
-(define (python-serialize lan t)
+(define (scala-serialize lan t)
   (with u (pre-serialize lan t)
     (with s (texmacs->code (stree->tree u))
       (string-append  s  "\n<EOF>\n"))))
 
-(define (scala-launcher)
-  (if (os-mingw?)
-      "tm_python.bat --texmacs"
-      "tm_python3 --texmacs"))
+(define (scala-launcher) "tm_scala --texmacs")
 
-(plugin-configure python
-  (:require (url-exists-in-path? "python"))
-  (:require (url-exists-in-path? "tm_python3"))
-  (:launch ,(python-launcher))
+(plugin-configure scala
+  (:launch ,(scala-launcher))
   (:tab-completion #t)
-  (:serializer ,python-serialize)
+  (:serializer ,scala-serialize)
   (:session "Scala")
   (:scripts "Scala"))
 

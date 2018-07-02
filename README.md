@@ -3,6 +3,13 @@
 
 TeXmacs.scala is a bridge library between TeXmacs and the Scala ecosystem.
 
+## Usage
+```
+git clone git@github.com:texmacs/TeXmacs.scala.git ~/.TeXmacs/plugins/scala
+cd ~/.TeXmacs/plugins/scala/
+# start the repl server
+```
+
 ## Roadmap
 ### v1.0
 A TeXmacs Session(REPL) with the following features:

@@ -53,11 +53,13 @@ int main()
     if (strcmp(buffer, "exit") == 0) {
       break;
     }
+    if (strlen(buffer) == 0)
+      continue;
     jstring input = env->NewStringUTF(buffer);
     jstring output = (jstring) env->CallStaticObjectMethod(tm, eval, input);
     const char *nativeString = env->GetStringUTFChars(output, JNI_FALSE);
     cout << DATA_BEGIN << "verbatim:";
-    cout << nativeString;
+    cout << nativeString << endl;
     cout << DATA_END;
     cout.flush ();
     env->ReleaseStringUTFChars(output, nativeString);

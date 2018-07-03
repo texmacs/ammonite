@@ -29,7 +29,7 @@
     (with s (texmacs->code (stree->tree u))
       (string-append  s  "\n<EOF>\n"))))
 
-(define (scala-launcher) "tm_scala --texmacs")
+(define (scala-launcher) "tm_scala")
 
 (plugin-configure scala
   (:launch ,(scala-launcher))
@@ -37,6 +37,3 @@
   (:serializer ,scala-serialize)
   (:session "Scala")
   (:scripts "Scala"))
-
-;(set-session-multiline-input "python" "default" #t)
-;(set-program-multiline-input "python" "default" #t)

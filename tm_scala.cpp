@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include <cstdlib>
 #include <jni.h>
 
 using namespace std;
@@ -14,8 +15,11 @@ JNIEnv* initJava() {
   JNIEnv *env;
   JavaVMInitArgs vm_args;
   JavaVMOption* options = new JavaVMOption[2];
+  char class_path[256]="-Djava.class.path=";
+  strcat(class_path, getenv("HOME"));
+  strcat(class_path, "/.TeXmacs/plugins/scala/texmacs.jar");
   options[0].optionString = " "; //-verbose:jni";
-  options[1].optionString = "-Djava.class.path=/Users/rendong/.TeXmacs/plugins/scala/texmacs.jar";
+  options[1].optionString = class_path;
   vm_args.version = JNI_VERSION_1_8;
   vm_args.nOptions = 2;
   vm_args.options = options;

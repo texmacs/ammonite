@@ -56,6 +56,10 @@ int main()
     char buffer[100];
     cin.getline (buffer, 100, '\n');
     if (strcmp(buffer, "exit") == 0) {
+      cout << DATA_BEGIN << "verbatim:";
+      cout << "Bye!" << endl;
+      cout << DATA_END;
+      cout.flush ();
       break;
     }
     if (strlen(buffer) == 0)

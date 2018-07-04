@@ -11,8 +11,8 @@ using namespace std;
 #define DATA_ESCAPE  ((char) 27)
 
 JavaVM *jvm;
-static int buffer_len= 4096;
-static char buffer [4096];
+static int buffer_len= 256;
+static char buffer [256];
 
 void read_input () {
   int i;
@@ -64,24 +64,18 @@ int main()
     exit(-1);
   }
 
-  int count = 1;
   while (true) {
+    string lines = "";
     read_input ();
-    if (strcmp(buffer, "<EOF>") == 0) {
-      continue;
+    while (strcmp(buffer, "<EOF>") != 0) {
+      lines = lines + "\n";
+      lines = lines + buffer;
+      read_input ();
     }
-    if (strcmp(buffer, "exit") == 0) {
-      cout << DATA_BEGIN << "verbatim:";
-      cout << "Bye!" << endl;
-      cout << DATA_END;
-      cout.flush ();
-      break;
-    }
-    string v = string(buffer);
-    bool is_blank = all_of(v.cbegin(), v.cend(), [](char i){ return isblank(i); });
+    bool is_blank = all_of(lines.cbegin(), lines.cend(), [](char i){ return isblank(i); });
     if (is_blank)
       continue;
-    jstring input = env->NewStringUTF(buffer);
+    jstring input = env->NewStringUTF(lines.c_str());
     jstring output = (jstring) env->CallStaticObjectMethod(tm, eval, input);
     const char *nativeString = env->GetStringUTFChars(output, JNI_FALSE);
     cout << DATA_BEGIN << "verbatim:";
@@ -89,7 +83,6 @@ int main()
     cout << DATA_END;
     cout.flush ();
     env->ReleaseStringUTFChars(output, nativeString);
-    count ++;
   }
 
   jvm->DestroyJavaVM();

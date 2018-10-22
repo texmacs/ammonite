@@ -3,6 +3,7 @@ package org.texmacs
 import java.io.PrintStream
 
 import ammonite.interp.{Interpreter, Preprocessor}
+import ammonite.main.Defaults
 import ammonite.ops.{Path, read}
 import ammonite.repl._
 import ammonite.runtime.{Frame, History, Storage}
@@ -108,7 +109,8 @@ class TestRepl {
       getFrame = () => frames().head,
       createFrame = () => { val f = sess0.childFrame(frames().head); frames() = f :: frames(); f },
       replCodeWrapper = codeWrapper,
-      scriptCodeWrapper = codeWrapper
+      scriptCodeWrapper = codeWrapper,
+      alreadyLoadedDependencies = Seq.empty
     )
 
   }catch{ case e: Throwable =>

@@ -1,9 +1,6 @@
-package org.texmacs
-
-import java.io.PrintStream
+package org.texmacs.repl
 
 import ammonite.interp.{Interpreter, Preprocessor}
-import ammonite.main.Defaults
 import ammonite.ops.{Path, read}
 import ammonite.repl._
 import ammonite.runtime.{Frame, History, Storage}
@@ -12,11 +9,7 @@ import ammonite.util._
 
 import scala.collection.mutable
 
-/**
-  * A test REPL which does not read from stdin or stdout files, but instead lets
-  * you feed in lines or sessions programmatically and have it execute them.
-  */
-class TestRepl {
+class Repl {
   var allOutput = ""
   def predef: (String, Option[ammonite.ops.Path]) = ("", None)
   def codeWrapper: Preprocessor.CodeWrapper = Preprocessor.CodeWrapper
@@ -26,8 +19,7 @@ class TestRepl {
   )
 
 
-  import java.io.ByteArrayOutputStream
-  import java.io.PrintStream
+  import java.io.{ByteArrayOutputStream, PrintStream}
 
   val outBytes = new ByteArrayOutputStream
   val errBytes = new ByteArrayOutputStream
@@ -257,7 +249,9 @@ class TestRepl {
     warningBuffer.clear()
     errorBuffer.clear()
     infoBuffer.clear()
-    val splitted = ammonite.interp.Parsers.split(input).get.get.value
+    val splitted = ammonite.interp.Parsers.split(input).getOrElse {
+      throw new Exception("Invalid Code")
+    }.get.value
     val processed = interp.processLine(
       input,
       splitted,
@@ -317,17 +311,4 @@ class TestRepl {
 
 }
 
-object TeXmacs {
-  val repl = new TestRepl
-  var line = -1
 
-  def eval(code: String): String = {
-    line = line + 1
-    try {
-      repl.run(code, line)._3
-    } catch {
-      case e: Throwable =>
-        ""
-    }
-  }
-}

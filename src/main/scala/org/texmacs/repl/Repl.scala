@@ -8,6 +8,7 @@ import ammonite.util.Util.normalizeNewlines
 import ammonite.util._
 
 import scala.collection.mutable
+import scala.tools.nsc.interactive.Global
 
 class Repl {
   var allOutput = ""
@@ -62,23 +63,25 @@ class Repl {
         "ammonite.repl.ReplBridge",
         "repl",
         new ReplApiImpl {
-          def replArgs0 = Vector.empty[Bind[_]]
-          def printer = printer0
+          override def replArgs0 = Vector.empty[Bind[_]]
+          override def printer = printer0
 
-          def sess = sess0
-          val prompt = Ref("@")
-          val frontEnd = Ref[FrontEnd](null)
-          def lastException: Throwable = null
-          def fullHistory = storage.fullHistory()
-          def history = new History(Vector())
-          val colors = Ref(Colors.BlackWhite)
-          def newCompiler() = interp.compilerManager.init(force = true)
-          def compiler = interp.compilerManager.compiler.compiler
-          def fullImports = interp.predefImports ++ imports
-          def imports = interp.frameImports
-          def usedEarlierDefinitions = interp.frameUsedEarlierDefinitions
-          def width = 80
-          def height = 80
+          override def sess = sess0
+          override val prompt = Ref("@")
+          override val frontEnd = Ref[FrontEnd](null)
+          override def lastException: Throwable = null
+          override def fullHistory = storage.fullHistory()
+          override def history = new History(Vector())
+          override val colors = Ref(Colors.BlackWhite)
+          override def newCompiler() = interp.compilerManager.init(force = true)
+          override def compiler = interp.compilerManager.compiler.compiler
+          override def fullImports = interp.predefImports ++ imports
+          override def imports = interp.frameImports
+          override def usedEarlierDefinitions = interp.frameUsedEarlierDefinitions
+          override def width = 80
+          override def height = 80
+
+          override def interactiveCompiler: Global = interp.compilerManager.pressy.compiler
 
           object load extends ReplLoad with (String => Unit){
 

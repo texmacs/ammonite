@@ -33,7 +33,7 @@
 
 (plugin-configure scala
   (:launch ,(scala-launcher))
-  (:tab-completion #t)
+  (:tab-completion #f)
   (:serializer ,scala-serialize)
   (:session "Scala")
   (:scripts "Scala"))

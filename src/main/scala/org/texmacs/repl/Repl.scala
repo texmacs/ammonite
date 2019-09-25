@@ -1,13 +1,14 @@
 package org.texmacs.repl
 
-import ammonite.interp.{Interpreter, CodeWrapper}
-import ammonite.ops.{Path, read}
+import ammonite.interp.{ Interpreter, CodeWrapper }
+import ammonite.ops.{ Path, read }
 import ammonite.repl._
-import ammonite.repl.api.{FrontEnd ,History, ReplLoad}
-import ammonite.runtime.{Frame, Storage}
+import ammonite.repl.api.{ FrontEnd, ReplLoad }
+import ammonite.runtime.{ Frame, Storage }
 import ammonite.util.Util.normalizeNewlines
 import ammonite.util._
 
+import java.io.{ ByteArrayOutputStream, PrintStream }
 import scala.collection.mutable
 import scala.tools.nsc.interactive.Global
 
@@ -17,11 +18,7 @@ class Repl {
   def codeWrapper: CodeWrapper = CodeWrapper
 
   val tempDir = ammonite.ops.Path(
-    java.nio.file.Files.createTempDirectory("ammonite-tester")
-  )
-
-
-  import java.io.{ByteArrayOutputStream, PrintStream}
+    java.nio.file.Files.createTempDirectory("ammonite-tester"))
 
   val outBytes = new ByteArrayOutputStream
   val errBytes = new ByteArrayOutputStream
@@ -38,8 +35,7 @@ class Repl {
     new PrintStream(resBytes),
     x => warningBuffer.append(x + Util.newLine),
     x => errorBuffer.append(x + Util.newLine),
-    x => infoBuffer.append(x + Util.newLine)
-  )
+    x => infoBuffer.append(x + Util.newLine))
   val storage = new Storage.Folder(tempDir)
   val frames = Ref(List(Frame.createInitial()))
   val sess0 = new SessionApiImpl(frames)
@@ -55,39 +51,27 @@ class Repl {
           Name("defaultPredef"),
           ammonite.main.Defaults.replPredef + ammonite.main.Defaults.predefString,
           true,
-          None
-        ),
-        PredefInfo(Name("testPredef"), predef._1, false, predef._2)
-      ),
+          None),
+        PredefInfo(Name("testPredef"), predef._1, false, predef._2)),
       customPredefs = Seq(),
       extraBridges = Seq((
         "ammonite.repl.ReplBridge",
         "repl",
-        new ReplApiImpl {
-          override def replArgs0 = Vector.empty[Bind[_]]
+        new AbstractReplApiImpl {
           override def printer = printer0
-
           override def sess = sess0
-          override val prompt = Ref("@")
-          override val frontEnd = Ref[FrontEnd](null)
-          override def lastException: Throwable = null
           override def fullHistory = storage.fullHistory()
-          override def history = new History(Vector())
-          override val colors = Ref(Colors.BlackWhite)
           override def newCompiler() = interp.compilerManager.init(force = true)
           override def compiler = interp.compilerManager.compiler.compiler
           override def fullImports = interp.predefImports ++ imports
           override def imports = interp.frameImports
           override def usedEarlierDefinitions = interp.frameUsedEarlierDefinitions
-          override def width = 80
-          override def height = 80
-
           override def interactiveCompiler: Global = interp.compilerManager.pressy.compiler
 
-          object load extends ReplLoad with (String => Unit){
+          object load extends ReplLoad with (String => Unit) {
 
             def apply(line: String) = {
-              interp.processExec(line, currentLine, () => currentLine += 1) match{
+              interp.processExec(line, currentLine, () => currentLine += 1) match {
                 case Res.Failure(s) => throw new CompilationError(s)
                 case Res.Exception(t, s) => throw t
                 case _ =>
@@ -99,25 +83,22 @@ class Repl {
               apply(normalizeNewlines(read(file)))
             }
           }
-        }
-      )),
+        })),
       colors = Ref(Colors.BlackWhite),
       getFrame = () => frames().head,
       createFrame = () => { val f = sess0.childFrame(frames().head); frames() = f :: frames(); f },
       replCodeWrapper = codeWrapper,
       scriptCodeWrapper = codeWrapper,
-      alreadyLoadedDependencies = Seq.empty
-    )
-
-  }catch{ case e: Throwable =>
-    println(infoBuffer.mkString)
-    println(outString)
-    println(resString)
-    println(warningBuffer.mkString)
-    println(errorBuffer.mkString)
-    throw e
+      alreadyLoadedDependencies = Seq.empty)
+  } catch {
+    case e: Throwable =>
+      println(infoBuffer.mkString)
+      println(outString)
+      println(resString)
+      println(warningBuffer.mkString)
+      println(errorBuffer.mkString)
+      throw e
   }
-
 
   for ((error, _) <- interp.initializePredef()) {
     val (msgOpt, causeOpt) = error match {
@@ -133,11 +114,8 @@ class Repl {
     println(errorBuffer.mkString)
     throw new Exception(
       s"Error during predef initialization${msgOpt.fold("")(": " + _)}",
-      causeOpt.orNull
-    )
+      causeOpt.orNull)
   }
-
-
 
   def session(sess: String): Unit = {
     // Remove the margin from the block and break
@@ -146,14 +124,13 @@ class Repl {
     // Strip margin & whitespace
 
     val steps = sess.replace(
-      Util.newLine + margin, Util.newLine
-    ).replaceAll(" *\n", "\n").split("\n\n")
+      Util.newLine + margin, Util.newLine).replaceAll(" *\n", "\n").split("\n\n")
 
-    for((step, index) <- steps.zipWithIndex){
+    for ((step, index) <- steps.zipWithIndex) {
       // Break the step into the command lines, starting with @,
       // and the result lines
       val (cmdLines, resultLines) =
-      step.lines.toArray.map(_.drop(margin)).partition(_.startsWith("@"))
+        step.lines.toArray.map(_.drop(margin)).partition(_.startsWith("@"))
 
       val commandText = cmdLines.map(_.stripPrefix("@ ")).toVector
 
@@ -163,7 +140,7 @@ class Repl {
       //
       // ...except for the empty 0-line fragment, and the entire fragment,
       // both of which are complete.
-      for (incomplete <- commandText.inits.toSeq.drop(1).dropRight(1)){
+      for (incomplete <- commandText.inits.toSeq.drop(1).dropRight(1)) {
         assert(ammonite.interp.Parsers.split(incomplete.mkString(Util.newLine)).isEmpty)
       }
 
@@ -181,20 +158,20 @@ class Repl {
         val strippedExpected = expected.stripPrefix("error: ")
         assert(error.contains(strippedExpected))
 
-      }else if (expected.startsWith("warning: ")){
+      } else if (expected.startsWith("warning: ")) {
         val strippedExpected = expected.stripPrefix("warning: ")
         assert(warning.contains(strippedExpected))
 
-      }else if (expected.startsWith("info: ")){
+      } else if (expected.startsWith("info: ")) {
         val strippedExpected = expected.stripPrefix("info: ")
         assert(info.contains(strippedExpected))
 
-      }else if (expected == "") {
-        processed match{
+      } else if (expected == "") {
+        processed match {
           case Res.Success(_) => // do nothing
           case Res.Skip => // do nothing
           case _: Res.Failing =>
-            assert{
+            assert {
               identity(error)
               identity(warning)
               identity(out)
@@ -204,7 +181,7 @@ class Repl {
             }
         }
 
-      }else {
+      } else {
         processed match {
           case Res.Success(str) =>
             // Strip trailing whitespace
@@ -214,16 +191,15 @@ class Repl {
                 .mkString(Util.newLine)
                 .trim()
             failLoudly(
-              assert{
+              assert {
                 identity(error)
                 identity(warning)
                 identity(info)
                 normalize(allOut) == normalize(expected)
-              }
-            )
+              })
 
           case Res.Failure(failureMsg) =>
-            assert{
+            assert {
               identity(error)
               identity(warning)
               identity(out)
@@ -234,9 +210,8 @@ class Repl {
             }
           case Res.Exception(ex, failureMsg) =>
             val trace = Repl.showException(
-              ex, fansi.Attrs.Empty, fansi.Attrs.Empty, fansi.Attrs.Empty
-            ) + Util.newLine +  failureMsg
-            assert({identity(trace); identity(expected); false})
+              ex, fansi.Attrs.Empty, fansi.Attrs.Empty, fansi.Attrs.Empty) + Util.newLine + failureMsg
+            assert({ identity(trace); identity(expected); false })
           case _ =>
             println(allOutput)
         }
@@ -244,10 +219,7 @@ class Repl {
     }
   }
 
-
-
   def run(input: String, index: Int) = {
-
     outBytes.reset()
     resBytes.reset()
     warningBuffer.clear()
@@ -261,14 +233,12 @@ class Repl {
       splitted,
       index,
       false,
-      () => currentLine += 1
-    )
-    processed match{
+      () => currentLine += 1)
+    processed match {
       case Res.Failure(s) => printer0.error(s)
       case Res.Exception(throwable, msg) =>
         printer0.error(
-          Repl.showException(throwable, fansi.Attrs.Empty, fansi.Attrs.Empty, fansi.Attrs.Empty)
-        )
+          Repl.showException(throwable, fansi.Attrs.Empty, fansi.Attrs.Empty, fansi.Attrs.Empty))
 
       case _ =>
     }
@@ -279,40 +249,37 @@ class Repl {
       resString,
       warningBuffer.mkString,
       errorBuffer.mkString,
-      infoBuffer.mkString
-    )
+      infoBuffer.mkString)
   }
 
-
-  def fail(input: String,
-           failureCheck: String => Boolean = _ => true) = {
+  def fail(
+    input: String,
+    failureCheck: String => Boolean = _ => true) = {
     val (processed, out, _, warning, error, info) = run(input, 0)
 
-    processed match{
-      case Res.Success(v) => assert({identity(v); identity(allOutput); false})
+    processed match {
+      case Res.Success(v) => assert({ identity(v); identity(allOutput); false })
       case Res.Failure(s) =>
         failLoudly(assert(failureCheck(s)))
       case Res.Exception(ex, s) =>
         val msg = Repl.showException(
-          ex, fansi.Attrs.Empty, fansi.Attrs.Empty, fansi.Attrs.Empty
-        ) + Util.newLine + s
+          ex, fansi.Attrs.Empty, fansi.Attrs.Empty, fansi.Attrs.Empty) + Util.newLine + s
         failLoudly(assert(failureCheck(msg)))
       case _ => ???
     }
   }
 
-
   def result(input: String, expected: Res[Evaluated]) = {
     val (processed, allOut, _, warning, error, info) = run(input, 0)
     assert(processed == expected)
   }
+
   def failLoudly[T](t: => T) =
     try t
-    catch{ case e: Exception =>
-      println("FAILURE TRACE" + Util.newLine + allOutput)
-      throw e
+    catch {
+      case e: Exception =>
+        println("FAILURE TRACE" + Util.newLine + allOutput)
+        throw e
     }
-
 }
-
 

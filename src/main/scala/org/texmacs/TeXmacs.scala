@@ -1,6 +1,6 @@
 package org.texmacs
 
-import ammonite.util.Res.{Failure, Success}
+import ammonite.util.Res.{ Failure, Success }
 import org.texmacs.repl.Repl
 
 object TeXmacs {
@@ -8,10 +8,10 @@ object TeXmacs {
   var line = -1
 
   /**
-    * Eval the code snippets and return the result string
-    * @param code Code snippets to eval
-    * @return
-    */
+   * Eval the code snippets and return the result string
+   * @param code Code snippets to eval
+   * @return
+   */
   def eval(code: String): String = {
     line = line + 1
     try {

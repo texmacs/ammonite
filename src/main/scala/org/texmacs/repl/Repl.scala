@@ -1,9 +1,10 @@
 package org.texmacs.repl
 
-import ammonite.interp.{Interpreter, Preprocessor}
+import ammonite.interp.{Interpreter, CodeWrapper}
 import ammonite.ops.{Path, read}
 import ammonite.repl._
-import ammonite.runtime.{Frame, History, Storage}
+import ammonite.repl.api.{FrontEnd ,History, ReplLoad}
+import ammonite.runtime.{Frame, Storage}
 import ammonite.util.Util.normalizeNewlines
 import ammonite.util._
 
@@ -13,7 +14,7 @@ import scala.tools.nsc.interactive.Global
 class Repl {
   var allOutput = ""
   def predef: (String, Option[ammonite.ops.Path]) = ("", None)
-  def codeWrapper: Preprocessor.CodeWrapper = Preprocessor.CodeWrapper
+  def codeWrapper: CodeWrapper = CodeWrapper
 
   val tempDir = ammonite.ops.Path(
     java.nio.file.Files.createTempDirectory("ammonite-tester")

@@ -2,3 +2,5 @@ target/
 *.jar
 .idea
 bin/
+.bloop/
+.metals/

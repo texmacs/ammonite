@@ -3,7 +3,7 @@ name := "TeXmacs.scala"
 scalaVersion := "2.12.10"
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi" % "ammonite_2.12.10" % "1.8.0",
+  "com.lihaoyi" % "ammonite_2.12.10" % "2.0.4",
   "org.scalatest" %% "scalatest" % "3.0.6" % "test",
 )
 

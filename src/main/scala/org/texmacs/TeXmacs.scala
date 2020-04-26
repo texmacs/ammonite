@@ -55,7 +55,14 @@ object TeXmacs {
     }
   }
 
+  def welcome(): Unit = {
+    flushVerbatim(s"Play with your favorite language (Scala ${util.Properties.versionNumberString}) in TeXmacs\n")
+    flushVerbatim(s"Created by Darcy Shen, based on Ammonite ${ammonite.Constants.version}\n")
+    flushVerbatim(s"Welcome to star and fork it at https://github.com/texmacs/TeXmacs.scala\n")
+  }
+
   def main(arr: Array[String]): Unit = {
+    welcome()
     flushPrompt(repl.replApi.prompt.apply())
     loop()
   }

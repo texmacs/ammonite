@@ -11,7 +11,6 @@ object Protocol {
 
   def flushEnd(): Unit = {
     print(DATA_END)
-    println()
     System.out.flush()
   }
 

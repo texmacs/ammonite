@@ -9,7 +9,7 @@ import ammonite.util.Colors
 
 trait AbstractReplApiImpl extends ReplApiImpl {
   override def replArgs0 = Vector.empty[Bind[_]]
-  override val prompt = Ref("@")
+  override val prompt = Ref("@ ")
   override val frontEnd = Ref[FrontEnd](null)
   override def lastException: Throwable = null
   override def history = new History(Vector())

@@ -62,6 +62,34 @@ class Repl {
       throw e
   }
 
+  val replApi = new AbstractReplApiImpl {
+    override def printer = printer0
+    override def sess = sess0
+    override def fullHistory = storage.fullHistory()
+    override def newCompiler() = interp.compilerManager.init(force = true)
+    override def compiler = interp.compilerManager.compiler.compiler
+    override def fullImports = interp.predefImports ++ imports
+    override def imports = interp.frameImports
+    override def usedEarlierDefinitions = interp.frameUsedEarlierDefinitions
+    override def interactiveCompiler: Global = interp.compilerManager.pressy.compiler
+
+    object load extends ReplLoad with (String => Unit) {
+
+      def apply(line: String) = {
+        interp.processExec(line, currentLine, () => currentLine += 1) match {
+          case Res.Failure(s) => throw new CompilationError(s)
+          case Res.Exception(t, s) => throw t
+          case _ =>
+        }
+      }
+
+      def exec(file: Path): Unit = {
+        interp.watch(file)
+        apply(normalizeNewlines(read(file)))
+      }
+    }
+  }
+
   val basePredefs = Seq(
     PredefInfo(
       Name("defaultPredef"),
@@ -70,36 +98,7 @@ class Repl {
       None),
     PredefInfo(Name("testPredef"), predef._1, false, predef._2))
   val customPredefs = Seq()
-  val extraBridges = Seq((
-    "ammonite.repl.ReplBridge",
-    "repl",
-    new AbstractReplApiImpl {
-      override def printer = printer0
-      override def sess = sess0
-      override def fullHistory = storage.fullHistory()
-      override def newCompiler() = interp.compilerManager.init(force = true)
-      override def compiler = interp.compilerManager.compiler.compiler
-      override def fullImports = interp.predefImports ++ imports
-      override def imports = interp.frameImports
-      override def usedEarlierDefinitions = interp.frameUsedEarlierDefinitions
-      override def interactiveCompiler: Global = interp.compilerManager.pressy.compiler
-
-      object load extends ReplLoad with (String => Unit) {
-
-        def apply(line: String) = {
-          interp.processExec(line, currentLine, () => currentLine += 1) match {
-            case Res.Failure(s) => throw new CompilationError(s)
-            case Res.Exception(t, s) => throw t
-            case _ =>
-          }
-        }
-
-        def exec(file: Path): Unit = {
-          interp.watch(file)
-          apply(normalizeNewlines(read(file)))
-        }
-      }
-    }))
+  val extraBridges = Seq(("ammonite.repl.ReplBridge", "repl", replApi))
 
   for ((error, _) <- interp.initializePredef(basePredefs, customPredefs, extraBridges)) {
     val (msgOpt, causeOpt) = error match {

@@ -46,44 +46,6 @@ class Repl {
       printer0,
       storage = storage,
       wd = ammonite.ops.pwd,
-      basePredefs = Seq(
-        PredefInfo(
-          Name("defaultPredef"),
-          ammonite.main.Defaults.replPredef + ammonite.main.Defaults.predefString,
-          true,
-          None),
-        PredefInfo(Name("testPredef"), predef._1, false, predef._2)),
-      customPredefs = Seq(),
-      extraBridges = Seq((
-        "ammonite.repl.ReplBridge",
-        "repl",
-        new AbstractReplApiImpl {
-          override def printer = printer0
-          override def sess = sess0
-          override def fullHistory = storage.fullHistory()
-          override def newCompiler() = interp.compilerManager.init(force = true)
-          override def compiler = interp.compilerManager.compiler.compiler
-          override def fullImports = interp.predefImports ++ imports
-          override def imports = interp.frameImports
-          override def usedEarlierDefinitions = interp.frameUsedEarlierDefinitions
-          override def interactiveCompiler: Global = interp.compilerManager.pressy.compiler
-
-          object load extends ReplLoad with (String => Unit) {
-
-            def apply(line: String) = {
-              interp.processExec(line, currentLine, () => currentLine += 1) match {
-                case Res.Failure(s) => throw new CompilationError(s)
-                case Res.Exception(t, s) => throw t
-                case _ =>
-              }
-            }
-
-            def exec(file: Path): Unit = {
-              interp.watch(file)
-              apply(normalizeNewlines(read(file)))
-            }
-          }
-        })),
       colors = Ref(Colors.BlackWhite),
       getFrame = () => frames().head,
       createFrame = () => { val f = sess0.childFrame(frames().head); frames() = f :: frames(); f },
@@ -100,7 +62,46 @@ class Repl {
       throw e
   }
 
-  for ((error, _) <- interp.initializePredef()) {
+  val basePredefs = Seq(
+    PredefInfo(
+      Name("defaultPredef"),
+      ammonite.main.Defaults.replPredef + ammonite.main.Defaults.predefString,
+      true,
+      None),
+    PredefInfo(Name("testPredef"), predef._1, false, predef._2))
+  val customPredefs = Seq()
+  val extraBridges = Seq((
+    "ammonite.repl.ReplBridge",
+    "repl",
+    new AbstractReplApiImpl {
+      override def printer = printer0
+      override def sess = sess0
+      override def fullHistory = storage.fullHistory()
+      override def newCompiler() = interp.compilerManager.init(force = true)
+      override def compiler = interp.compilerManager.compiler.compiler
+      override def fullImports = interp.predefImports ++ imports
+      override def imports = interp.frameImports
+      override def usedEarlierDefinitions = interp.frameUsedEarlierDefinitions
+      override def interactiveCompiler: Global = interp.compilerManager.pressy.compiler
+
+      object load extends ReplLoad with (String => Unit) {
+
+        def apply(line: String) = {
+          interp.processExec(line, currentLine, () => currentLine += 1) match {
+            case Res.Failure(s) => throw new CompilationError(s)
+            case Res.Exception(t, s) => throw t
+            case _ =>
+          }
+        }
+
+        def exec(file: Path): Unit = {
+          interp.watch(file)
+          apply(normalizeNewlines(read(file)))
+        }
+      }
+    }))
+
+  for ((error, _) <- interp.initializePredef(basePredefs, customPredefs, extraBridges)) {
     val (msgOpt, causeOpt) = error match {
       case r: Res.Exception => (Some(r.msg), Some(r.t))
       case r: Res.Failure => (Some(r.msg), None)

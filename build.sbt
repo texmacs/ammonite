@@ -1,9 +1,9 @@
 name := "TeXmacs.scala"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.12.11"
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi" % "ammonite_2.12.10" % "2.0.4",
+  "com.lihaoyi" % "ammonite_2.12.11" % "2.1.0",
   "org.scalatest" %% "scalatest" % "3.0.6" % "test",
 )
 

@@ -9,11 +9,11 @@ headerLicense := Some(HeaderLicense.Custom(
      |""".stripMargin
 ))
 
-scalaVersion := "2.12.11"
+scalaVersion := "2.13.1"
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi" % "ammonite_2.12.11" % "2.1.0",
-  "org.scalatest" %% "scalatest" % "3.0.6" % "test",
+  "com.lihaoyi" % "ammonite_2.13.1" % "2.1.0",
+  "org.scalatest" %% "scalatest" % "3.1.1" % "test",
 )
 
 assemblyJarName in assembly := "texmacs.jar"

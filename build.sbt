@@ -9,10 +9,10 @@ headerLicense := Some(HeaderLicense.Custom(
      |""".stripMargin
 ))
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.13.2"
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi" % "ammonite_2.13.1" % "2.1.0",
+  "com.lihaoyi" % s"ammonite_${scalaVersion.value}" % "2.1.4",
   "org.scalatest" %% "scalatest" % "3.1.1" % "test",
 )
 

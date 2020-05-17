@@ -101,8 +101,8 @@ class Repl {
   val basePredefs = Seq(
     PredefInfo(
       Name("defaultPredef"),
-      ammonite.main.Defaults.replPredef + ammonite.main.Defaults.predefString,
-      true,
+      predef._1,
+      false,
       None),
     PredefInfo(Name("testPredef"), predef._1, false, predef._2))
   val customPredefs = Seq()

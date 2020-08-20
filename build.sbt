@@ -12,7 +12,7 @@ headerLicense := Some(HeaderLicense.Custom(
 scalaVersion := "2.13.2"
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi" % s"ammonite_${scalaVersion.value}" % "2.1.4",
+  "com.lihaoyi" % s"ammonite_${scalaVersion.value}" % "2.2.0",
   "org.scalatest" %% "scalatest" % "3.1.1" % "test",
 )
 

@@ -17,9 +17,15 @@
     (with s (texmacs->code (stree->tree u) "SourceCode")
       (string-append  s  "\n<EOF>\n"))))
 
+(define (java-home) (string-append (getenv "HOME") "/.sdkman/candidates/java/current"))
+
+(define (java-cli)
+  (string-append (java-home) "/bin/java"))
+
 (define (scala-launcher)
   (string-append
-   "java -jar "
+   (java-cli)
+   " -jar "
    (getenv "TEXMACS_HOME_PATH")
    "/plugins/scala/texmacs.jar"))
 

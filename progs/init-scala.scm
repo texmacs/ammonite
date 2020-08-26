@@ -17,10 +17,26 @@
     (with s (texmacs->code (stree->tree u) "SourceCode")
       (string-append  s  "\n<EOF>\n"))))
 
-(define (java-home) (string-append (getenv "HOME") "/.sdkman/candidates/java/current"))
+(define (sdkman-java-home)
+  (with ret (string-append (getenv "HOME")
+                           "/.sdkman/candidates/java/current")
+    (if (url-exists? ret) ret #f)))
+
+(define (java-home)
+  (or (getenv "JAVA_HOME"))
+      (sdkman-java-home))
+
+(define (linux-java-cli)
+  (with ret "/usr/bin/java"
+    (if (url-exists? ret) ret #f)))
+
+(define (home-java-cli)
+  (with ret (string-append (java-home) "/bin/java")
+    (if (url-exists? ret) ret "#f")))
 
 (define (java-cli)
-  (string-append (java-home) "/bin/java"))
+  (or (home-java-cli)
+      (linux-java-cli)))
 
 (define (scala-launcher)
   (string-append

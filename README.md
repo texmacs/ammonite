@@ -16,6 +16,9 @@ mill session.test
 ```
 
 ## Installation
+```
+mill session.install
+```
 
 ## Roadmap
 ### v1.0

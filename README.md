@@ -3,14 +3,19 @@
 
 TeXmacs.scala is a bridge library between TeXmacs and the Scala ecosystem.
 
+## Develop
+```
+# Intellij Idea
+mill mill.scalalib.GenIdea/idea
+
+# compile
+mill session.compile
+
+# test
+mill session.test
+```
+
 ## Installation
-```
-git clone git@github.com:texmacs/TeXmacs.scala.git
-cd TeXmacs.scala
-sbt assembly
-cd target
-cmake .. && make && make install
-```
 
 ## Roadmap
 ### v1.0

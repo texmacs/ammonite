@@ -4,3 +4,5 @@ target/
 bin/
 .bloop/
 .metals/
+out/
+.idea_modules/

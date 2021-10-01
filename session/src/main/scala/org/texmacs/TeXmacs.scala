@@ -9,7 +9,7 @@
 package org.texmacs
 
 import ammonite.util.Res.{ Failure, Success }
-import org.texmacs.repl.Repl
+import org.texmacs.repl.TRepl
 import org.texmacs.Protocol._
 
 import scala.collection.mutable.ArrayBuffer
@@ -17,7 +17,7 @@ import scala.io.StdIn
 import scala.util.control.Breaks._
 
 object TeXmacs {
-  val repl = new Repl
+  val repl = new TRepl
   var line: Int = -1
 
   /**

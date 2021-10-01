@@ -8,22 +8,23 @@
 
 package org.texmacs.repl
 
-import ammonite.interp.{ Interpreter, CodeWrapper }
-import ammonite.ops.{ Path, read }
+import ammonite.compiler.iface.{CodeWrapper, CompilerLifecycleManager}
+import ammonite.interp.Interpreter
+import ammonite.ops.{Path, read}
 import ammonite.repl._
-import ammonite.repl.api.{ FrontEnd, ReplLoad }
-import ammonite.runtime.{ Frame, Storage }
+import ammonite.repl.api.{FrontEnd, ReplLoad}
+import ammonite.runtime.{Frame, Storage}
 import ammonite.util.Util.normalizeNewlines
 import ammonite.util._
+import ammonite.compiler.{CompilerBuilder, DefaultCodeWrapper, Parsers}
 
-import java.io.{ ByteArrayOutputStream, PrintStream }
+import java.io.{ByteArrayOutputStream, PrintStream}
 import scala.collection.mutable
-import scala.tools.nsc.interactive.Global
 
-class Repl {
+class TRepl {
   var allOutput = ""
   def predef: (String, Option[ammonite.ops.Path]) = ("", None)
-  def codeWrapper: CodeWrapper = CodeWrapper
+  def codeWrapper: CodeWrapper = DefaultCodeWrapper
 
   val tempDir = ammonite.ops.Path(
     java.nio.file.Files.createTempDirectory("ammonite-tester"))
@@ -51,6 +52,8 @@ class Repl {
   var currentLine = 0
   val interp: Interpreter = try {
     new Interpreter(
+      compilerBuilder = CompilerBuilder,
+      parser = Parsers,
       printer0,
       storage = storage,
       wd = ammonite.ops.pwd,
@@ -75,11 +78,10 @@ class Repl {
     override def sess = sess0
     override def fullHistory = storage.fullHistory()
     override def newCompiler() = interp.compilerManager.init(force = true)
-    override def compiler = interp.compilerManager.compiler.compiler
     override def fullImports = interp.predefImports ++ imports
     override def imports = interp.frameImports
     override def usedEarlierDefinitions = interp.frameUsedEarlierDefinitions
-    override def interactiveCompiler: Global = interp.compilerManager.pressy.compiler
+    override def _compilerManager = interp.compilerManager
 
     object load extends ReplLoad with (String => Unit) {
 
@@ -96,6 +98,7 @@ class Repl {
         apply(normalizeNewlines(read(file)))
       }
     }
+
   }
 
   val basePredefs = Seq(
@@ -128,7 +131,7 @@ class Repl {
   def session(sess: String): Unit = {
     // Remove the margin from the block and break
     // it into blank-line-delimited steps
-    val margin = sess.lines.filter(_.trim != "").map(_.takeWhile(_ == ' ').length).min
+    val margin = sess.linesIterator.filter(_.trim != "").map(_.takeWhile(_ == ' ').length).min
     // Strip margin & whitespace
 
     val steps = sess.replace(
@@ -138,7 +141,7 @@ class Repl {
       // Break the step into the command lines, starting with @,
       // and the result lines
       val (cmdLines, resultLines) =
-        step.lines.toArray.map(_.drop(margin)).partition(_.startsWith("@"))
+        step.linesIterator.toArray.map(_.drop(margin)).partition(_.startsWith("@"))
 
       val commandText = cmdLines.map(_.stripPrefix("@ ")).toVector
 
@@ -149,7 +152,7 @@ class Repl {
       // ...except for the empty 0-line fragment, and the entire fragment,
       // both of which are complete.
       for (incomplete <- commandText.inits.toSeq.drop(1).dropRight(1)) {
-        assert(ammonite.interp.Parsers.split(incomplete.mkString(Util.newLine)).isEmpty)
+        assert(Parsers.split(incomplete.mkString(Util.newLine)).isEmpty)
       }
 
       // Finally, actually run the complete command text through the
@@ -194,7 +197,7 @@ class Repl {
           case Res.Success(str) =>
             // Strip trailing whitespace
             def normalize(s: String) =
-              s.lines
+              s.linesIterator
                 .map(_.replaceAll(" *$", ""))
                 .mkString(Util.newLine)
                 .trim()
@@ -233,9 +236,11 @@ class Repl {
     warningBuffer.clear()
     errorBuffer.clear()
     infoBuffer.clear()
-    val splitted = ammonite.interp.Parsers.split(input).getOrElse {
+    val splitted = Parsers.split(input).getOrElse {
       throw new Exception("Invalid Code")
-    }.get.value
+    }.getOrElse {
+      throw new Exception("Invalid Code")
+    }
     val processed = interp.processLine(
       input,
       splitted,

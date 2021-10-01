@@ -2,13 +2,15 @@ import mill._
 import os.up
 import scalalib._
 
-object session extends SbtModule {
-  def scalaVersion = "2.13.1"
+object session extends SbtModule with ScalaModule {
+  def scalaVersion = "2.13.6"
+
+  override def scalacOptions = Seq("-deprecation")
 
   override def mainClass = Some("org.texmacs.TeXmacs")
 
   override def ivyDeps = Agg(
-    ivy"com.lihaoyi:ammonite_${scalaVersion()}:2.2.0"
+    ivy"com.lihaoyi:ammonite_${scalaVersion()}:2.4.0"
   )
 
   object test extends Tests {
